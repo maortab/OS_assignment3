@@ -94,3 +94,6 @@ struct virtio_blk_req {
   uint32 reserved;
   uint64 sector;
 };
+
+uint64 virtio_paddr(int page_index); // in virtio_gpu.c
+int map_framebuffer(pagetable_t pt, uint64 va); // in virtio_gpu.c

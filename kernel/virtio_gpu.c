@@ -578,3 +578,24 @@ void display_daemon(void)
         acquire(&tickslock);
     }
 }
+
+uint64 virtio_paddr(int page_index){
+    if (page_index < 0 || page_index >= FB_PAGES)
+        panic("virtio_paddr: invalid page index");
+    return (uint64)fb[page_index]; // returns phisical address of the framebuffer page at page_index
+}
+
+int map_framebuffer(pagetable_t pt, uint64 va){
+    for (int i = 0; i < FB_PAGES; i++)
+    {
+        if (mappages(pt, va + i * PGSIZE, PGSIZE, virtio_paddr(i), PTE_W | PTE_U | PTE_R) != 0)
+            panic("map_framebuffer: mappages failed");
+    }
+    return 0;
+}
+void unmap_framebuffer(pagetable_t pt, uint64 va){
+    for (int i = 0; i < FB_PAGES; i++)
+    {
+        uvmunmap(pt, va + i * PGSIZE, 1, 0);
+    }
+}

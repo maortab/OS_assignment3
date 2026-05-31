@@ -116,5 +116,18 @@ sys_flip_display(void)
 uint64
 sys_map_display(void)
 {
-  return -1;
+  uint64 va;
+  argaddr(0, &va);
+  struct proc *p = myproc();
+  if (va == 0){
+    va = PGROUNDUP(p->sz);
+  } else if (va != 0) {
+    if (va % PGSIZE != 0){return -1;}   // virtual address must be page-aligned
+    if (va < PGROUNDUP(myproc()->sz)){return -1;}
+  }
+  if (map_framebuffer(myproc()->pagetable, va) != 0){
+    return -1;
+  }
+  p->fb_va = va;
+  return va;
 }
