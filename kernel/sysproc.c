@@ -100,8 +100,18 @@ sys_uptime(void)
 // TODO: Students implement this syscall.
 uint64
 sys_flip_display(void)
-{
-  return -1;
+{ 
+  uint64 buf_va;
+  argaddr(0, &buf_va);//Read the void *buf argument from userspace
+    
+  if (buf_va % PGSIZE != 0){//Validate that buf is page-aligned
+    return -1;
+  }
+  struct proc *p = myproc();
+  if (virtio_gpu_flip(p->pagetable, buf_va) < 0){
+    return -1;
+  }
+  return 0;
 }
 
 // sys_map_display: map the GPU's kernel framebuffer pages (fb[]) directly
@@ -124,6 +134,10 @@ sys_map_display(void)
   } else if (va != 0) {
     if (va % PGSIZE != 0){return -1;}   // virtual address must be page-aligned
     if (va < PGROUNDUP(myproc()->sz)){return -1;}
+    for (int i = 0; i < GPU_FB_PAGES; i++) {
+      if (walkaddr(p->pagetable, va + i * PGSIZE) != 0)
+        return -1;
+    }
   }
   if (map_framebuffer(myproc()->pagetable, va) != 0){
     return -1;
@@ -131,3 +145,5 @@ sys_map_display(void)
   p->fb_va = va;
   return va;
 }
+
+

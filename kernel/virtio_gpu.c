@@ -588,8 +588,12 @@ uint64 virtio_paddr(int page_index){
 int map_framebuffer(pagetable_t pt, uint64 va){
     for (int i = 0; i < FB_PAGES; i++)
     {
-        if (mappages(pt, va + i * PGSIZE, PGSIZE, virtio_paddr(i), PTE_W | PTE_U | PTE_R) != 0)
-            panic("map_framebuffer: mappages failed");
+        if (mappages(pt, va + i * PGSIZE, PGSIZE, virtio_paddr(i), PTE_W | PTE_U | PTE_R) != 0){
+            // unmap what we already mapped
+            for (int j = 0; j < i; j++)
+                uvmunmap(pt, va + j * PGSIZE, 1, 0);
+            return -1;
+        }
     }
     return 0;
 }
@@ -598,4 +602,24 @@ void unmap_framebuffer(pagetable_t pt, uint64 va){
     {
         uvmunmap(pt, va + i * PGSIZE, 1, 0);
     }
+}
+
+int virtio_gpu_flip(pagetable_t pt, uint64 buf_va)
+{
+    static struct virtio_gpu_mem_entry entries[FB_PAGES];// backing entries
+    for (int i = 0; i < FB_PAGES; i++)
+    {
+        uint64 va = buf_va + (i * PGSIZE);
+        uint64 pa = walkaddr(pt, va);
+        if (pa == 0) {
+            return -1; 
+        }
+        //Populate the virtio_gpu_mem_entry struct for this specific page
+        entries[i].addr = pa;
+        entries[i].length = PGSIZE;
+        entries[i].padding = 0; 
+    }
+    gpu_cmd_detach(); //Detach the current backing list from the GPU
+    gpu_cmd_attach(entries, FB_PAGES); //Attach the new backing list pointing directly to the user's physical pages
+    return 0;
 }

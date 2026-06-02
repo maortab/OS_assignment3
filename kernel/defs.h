@@ -193,6 +193,8 @@ void            display_daemon(void);
 //task1
 int             map_framebuffer(pagetable_t, uint64);
 void            unmap_framebuffer(pagetable_t, uint64);
+//task2
+int             virtio_gpu_flip(pagetable_t pt, uint64 buf_va);
 
 
 // number of elements in fixed-size array
