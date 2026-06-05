@@ -614,7 +614,6 @@ int virtio_gpu_flip(pagetable_t pt, uint64 buf_va)
         if (pa == 0) {
             return -1; 
         }
-        //Populate the virtio_gpu_mem_entry struct for this specific page
         entries[i].addr = pa;
         entries[i].length = PGSIZE;
         entries[i].padding = 0; 

@@ -163,6 +163,11 @@ freeproc(struct proc *p)
     unmap_framebuffer(p->pagetable, p->fb_va);
   p->fb_va = 0;
 
+  if(p->pagetable && p->fb_va != 0) {// remove framebuffer mapping without freeing kernel-owned physical pages
+    unmap_framebuffer(p->pagetable, p->fb_va);
+    p->fb_va = 0;
+  }
+
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;

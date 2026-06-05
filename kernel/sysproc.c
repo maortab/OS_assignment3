@@ -107,7 +107,9 @@ sys_flip_display(void)
   if (buf_va % PGSIZE != 0){//Validate that buf is page-aligned
     return -1;
   }
+
   struct proc *p = myproc();
+  
   if (virtio_gpu_flip(p->pagetable, buf_va) < 0){
     return -1;
   }

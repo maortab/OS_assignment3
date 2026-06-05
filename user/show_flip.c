@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    sleep(100); //to see task 2 results
+    //sleep(100); //to see task 2 results
 
     exit(0);
 }
