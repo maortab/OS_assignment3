@@ -113,6 +113,7 @@ sys_flip_display(void)
   if (virtio_gpu_flip(p->pagetable, buf_va) < 0){
     return -1;
   }
+  p->did_flip = 1;
   return 0;
 }
 

@@ -163,9 +163,11 @@ freeproc(struct proc *p)
     unmap_framebuffer(p->pagetable, p->fb_va);
   p->fb_va = 0;
 
-  if(p->pagetable && p->fb_va != 0) {// remove framebuffer mapping without freeing kernel-owned physical pages
-    unmap_framebuffer(p->pagetable, p->fb_va);
-    p->fb_va = 0;
+  //task2: restore kernel fb if this process did a flip, so the GPU doesn't
+  // keep reading from now-freed user pages
+  if(p->did_flip) {
+    virtio_gpu_restore_kernel_fb();
+    p->did_flip = 0;
   }
 
   if(p->pagetable)

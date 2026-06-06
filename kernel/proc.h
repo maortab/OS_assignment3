@@ -107,4 +107,6 @@ struct proc {
 
   //task1
   uint64 fb_va;
+  //task2
+  int did_flip;
 };

@@ -604,6 +604,21 @@ void unmap_framebuffer(pagetable_t pt, uint64 va){
     }
 }
 
+// Restore the GPU resource backing to the kernel fb[] pages.
+// Call this when a process that called flip_display() exits, so the GPU
+// doesn't keep reading from freed user pages.
+void virtio_gpu_restore_kernel_fb(void)
+{
+    static struct virtio_gpu_mem_entry entries[FB_PAGES];
+    for (int i = 0; i < FB_PAGES; i++) {
+        entries[i].addr   = (uint64)fb[i];
+        entries[i].length = PGSIZE;
+        entries[i].padding = 0;
+    }
+    gpu_cmd_detach();
+    gpu_cmd_attach(entries, FB_PAGES);
+}
+
 int virtio_gpu_flip(pagetable_t pt, uint64 buf_va)
 {
     static struct virtio_gpu_mem_entry entries[FB_PAGES];// backing entries
